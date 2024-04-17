@@ -1,11 +1,11 @@
 import sys
 import os
 import streamlit as st
-sys.path.append(os.path.abspath('../../'))
+sys.path.append(os.path.abspath('F:\quzzify\mission-quizify'))
 from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
 
-
+from google.oauth2 import service_account
 # Import Task libraries
 from langchain_core.documents import Document
 from langchain.text_splitter import CharacterTextSplitter
@@ -58,6 +58,18 @@ class ChromaCollectionCreator:
         # https://python.langchain.com/docs/modules/data_connection/document_transformers/character_text_splitter
         # [Your code here for splitting documents]
         
+        
+        text_splitter = CharacterTextSplitter(
+            separator="\n\n",
+            chunk_size=1000,
+            chunk_overlap=200,
+            length_function=len,
+            is_separator_regex=False,
+        )
+        
+        texts = text_splitter.create_documents([self.processor.pages[1]])
+        print(texts[0])
+
         if texts is not None:
             st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")
 
@@ -65,6 +77,8 @@ class ChromaCollectionCreator:
         # https://docs.trychroma.com/
         # Create a Chroma in-memory client using the text chunks and the embeddings model
         # [Your code here for creating Chroma collection]
+    
+        self.db = Chroma.from_documents(texts, self.embed_model.client)
         
         if self.db:
             st.success("Successfully created Chroma Collection!", icon="✅")
@@ -90,11 +104,12 @@ class ChromaCollectionCreator:
 if __name__ == "__main__":
     processor = DocumentProcessor() # Initialize from Task 3
     processor.ingest_documents()
-    
+    credentials= service_account.Credentials.from_service_account_file('mission-quizify\quizzifykey.json')
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR PROJECT ID HERE",
-        "location": "us-central1"
+        "project": "quzzifyradicalai",
+        "location": "europe-west1",
+        "credentials" : credentials
     }
     
     embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
