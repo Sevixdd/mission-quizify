@@ -66,8 +66,8 @@ class ChromaCollectionCreator:
             length_function=len,
             is_separator_regex=False,
         )
-        
-        texts = text_splitter.create_documents([self.processor.pages[1]])
+
+        texts = text_splitter.create_documents(self.processor.pages)
         print(texts[0])
 
         if texts is not None:

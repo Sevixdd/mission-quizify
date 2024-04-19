@@ -1,7 +1,9 @@
 import sys
 import os
 import streamlit as st
-sys.path.append(os.path.abspath('../../'))
+
+from google.oauth2 import service_account
+sys.path.append(os.path.abspath('F:\quzzify\mission-quizify'))
 from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
 from tasks.task_5.task_5 import ChromaCollectionCreator
@@ -40,13 +42,14 @@ Implementation Guidance:
 """
 
 if __name__ == "__main__":
-    st.header("Quizzify")
 
     # Configuration for EmbeddingClient
+    credentials= service_account.Credentials.from_service_account_file('mission-quizify\quizzifykey.json')
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR PROJECT ID HERE",
-        "location": "us-central1"
+        "project": "quzzifyradicalai",
+        "location": "europe-west1",
+        "credentials" : credentials
     }
     
     screen = st.empty() # Screen 1, ingest documents
@@ -57,7 +60,11 @@ if __name__ == "__main__":
         # 2) Initalize the EmbeddingClient from Task 4 with embed config
         # 3) Initialize the ChromaCollectionCreator from Task 5
         ####### YOUR CODE HERE #######
-
+        processor = DocumentProcessor() # Initialize from Task 3
+        processor.ingest_documents()
+        embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
+        
+        chroma_creator = ChromaCollectionCreator(processor, embed_client) # Initialize from Task 5
         with st.form("Load Data to Chroma"):
             st.subheader("Quiz Builder")
             st.write("Select PDFs for Ingestion, the topic for the quiz, and click Generate!")
@@ -67,6 +74,8 @@ if __name__ == "__main__":
             # 4) for the quiz topic and the desired number of questions
             ####### YOUR CODE HERE #######
             
+            topic_input = st.text_input("Quiz topic and desired number of questions")
+
             document = None
             
             submitted = st.form_submit_button("Generate a Quiz!")
@@ -74,9 +83,9 @@ if __name__ == "__main__":
                 ####### YOUR CODE HERE #######
                 # 5) Use the create_chroma_collection() method to create a Chroma collection from the processed documents
                 ####### YOUR CODE HERE #######
-                    
+                chroma_creator.create_chroma_collection()
                 # Uncomment the following lines to test the query_chroma_collection() method
-                # document = chroma_creator.query_chroma_collection(topic_input) 
+                document = chroma_creator.query_chroma_collection(topic_input) 
                 
     if document:
         screen.empty() # Screen 2
