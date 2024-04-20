@@ -75,7 +75,8 @@ if __name__ == "__main__":
             ####### YOUR CODE HERE #######
             
             topic_input = st.text_input("Quiz topic and desired number of questions")
-
+            questions = st.slider("Number of Questions", min_value=1, max_value=10, value=1)
+            
             document = None
             
             submitted = st.form_submit_button("Generate a Quiz!")
