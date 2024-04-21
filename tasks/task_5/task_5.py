@@ -68,7 +68,6 @@ class ChromaCollectionCreator:
         )
 
         texts = text_splitter.create_documents(self.processor.pages)
-        print(texts[0])
 
         if texts is not None:
             st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")

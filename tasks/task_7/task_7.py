@@ -6,6 +6,9 @@ import sys
 from google.oauth2 import service_account
 import pandas as pd
 sys.path.append(os.path.abspath('F:\quzzify\mission-quizify'))
+from tasks.task_3.task_3 import DocumentProcessor
+from tasks.task_4.task_4 import EmbeddingClient
+from tasks.task_5.task_5 import ChromaCollectionCreator
 
 class QuizGenerator:
     def __init__(self, topic=None, num_questions=1, vectorstore=None):
@@ -147,15 +150,7 @@ class QuizGenerator:
         # Invoke the chain with the topic as input
         response = chain.invoke(self.topic)
         return response
-    def confing():
-        credentials= service_account.Credentials.from_service_account_file('mission-quizify\quizzifykey.json')
-        embed_config = {
-            "model_name": "textembedding-gecko@003",
-            "project": "quzzifyradicalai",
-            "location": "europe-west1",
-            "credentials" : credentials
-        }
-        return embed_config
+    
 # Test the Object
 if __name__ == "__main__":
     
@@ -170,7 +165,7 @@ if __name__ == "__main__":
         processor.ingest_documents()
     
         embed_config = EmbeddingClient.config()
-        
+        print(embed_config)
         embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
     
         chroma_creator = ChromaCollectionCreator(processor, embed_client)

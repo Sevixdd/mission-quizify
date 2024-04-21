@@ -83,6 +83,5 @@ if __name__ == "__main__":
     vectors = embedding_client.embed_query("Hello World!")
     if vectors:
         st.write(vectors)
-        print(vectors)
         st.write("Successfully used the embedding client!")
         print("Successfully used the embedding client!")
