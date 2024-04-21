@@ -23,3 +23,5 @@ pip install -r requirements.txt
 # Run the application
 streamlit run app.py
 ```
+## Demo link
+https://www.loom.com/share/bee71e5b60e043488de2bb748dd92f0f?sid=4015cffb-98e6-4c25-92b4-d3c6ae0d414f
