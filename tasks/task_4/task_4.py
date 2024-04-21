@@ -64,7 +64,16 @@ class EmbeddingClient:
         except AttributeError:
             print("Method embed_documents not defined for the client.")
             return None
-
+    def config():
+        credentials= service_account.Credentials.from_service_account_file('mission-quizify\quizzifykey.json')
+        embed_config = {
+            "model_name": "textembedding-gecko@003",
+            "project": "quzzifyradicalai",
+            "location": "europe-west1",
+            "credentials" : credentials
+        }
+    
+        return embed_config
 if __name__ == "__main__":
     model_name = "textembedding-gecko@003"
     project = "quzzifyradicalai"

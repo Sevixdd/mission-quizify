@@ -2,11 +2,12 @@ import streamlit as st
 import os
 import sys
 import json
-sys.path.append(os.path.abspath('../../'))
+from google.oauth2 import service_account
+import pandas as pd
+sys.path.append(os.path.abspath('F:\quzzify\mission-quizify'))
 from tasks.task_3.task_3 import DocumentProcessor
 from tasks.task_4.task_4 import EmbeddingClient
 from tasks.task_5.task_5 import ChromaCollectionCreator
-
 from langchain_core.prompts import PromptTemplate
 from langchain_google_vertexai import VertexAI
 
@@ -86,7 +87,7 @@ class QuizGenerator:
         from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
         # Enable a Retriever
-        retriever = self.vectorstore.as_retriever()
+        retriever = self.vectorstore.db.as_retriever()
         
         # Use the system template to create a PromptTemplate
         prompt = PromptTemplate.from_template(self.system_template)
@@ -122,14 +123,15 @@ class QuizGenerator:
         Note: This method relies on `generate_question_with_vectorstore` for question generation and `validate_question` for ensuring question uniqueness. Ensure `question_bank` is properly initialized and managed.
         """
         self.question_bank = [] # Reset the question bank
-
+        retry_max = 2
         for _ in range(self.num_questions):
+            retry = 0
             ##### YOUR CODE HERE #####
-            question_str = # Use class method to generate question
+            question_str = self.generate_question_with_vectorstore() # Use class method to generate question
             
             ##### YOUR CODE HERE #####
             try:
-                # Convert the JSON String to a dictionary
+                question = json.loads(question_str)
             except json.JSONDecodeError:
                 print("Failed to decode question JSON.")
                 continue  # Skip this iteration if JSON decoding fails
@@ -140,10 +142,16 @@ class QuizGenerator:
             if self.validate_question(question):
                 print("Successfully generated unique question")
                 # Add the valid and unique question to the bank
+                self.question_bank.append(question)
             else:
                 print("Duplicate or invalid question detected.")
             ##### YOUR CODE HERE #####
-
+                while retry < retry_max:
+                    question = json.loads(self.generate_question_with_vectorstore())
+                    if self.validate_question(question):
+                        self.validate_question.append(question)
+                        break
+                    retry += 1
         return self.question_bank
 
     def validate_question(self, question: dict) -> bool:
@@ -166,9 +174,18 @@ class QuizGenerator:
 
         Note: This method assumes `question` is a valid dictionary and `question_bank` has been properly initialized.
         """
+        is_unique = True
         ##### YOUR CODE HERE #####
         # Consider missing 'question' key as invalid in the dict object
+        if 'question' not in question:
+            is_unique = False
+
         # Check if a question with the same text already exists in the self.question_bank
+
+        for q in self.question_bank:
+            if question['question'] == q['question']:
+                is_unique = False
+                break
         ##### YOUR CODE HERE #####
         return is_unique
 
@@ -176,18 +193,14 @@ class QuizGenerator:
 # Test Generating the Quiz
 if __name__ == "__main__":
     
-    embed_config = {
-        "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
-        "location": "us-central1"
-    }
     
     screen = st.empty()
     with screen.container():
         st.header("Quiz Builder")
         processor = DocumentProcessor()
         processor.ingest_documents()
-    
+        
+        embed_config = EmbeddingClient.config()
         embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
     
         chroma_creator = ChromaCollectionCreator(processor, embed_client)

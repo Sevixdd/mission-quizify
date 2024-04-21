@@ -3,7 +3,9 @@ from langchain_google_vertexai import VertexAI
 from langchain_core.prompts import PromptTemplate
 import os
 import sys
-sys.path.append(os.path.abspath('../../'))
+from google.oauth2 import service_account
+import pandas as pd
+sys.path.append(os.path.abspath('F:\quzzify\mission-quizify'))
 
 class QuizGenerator:
     def __init__(self, topic=None, num_questions=1, vectorstore=None):
@@ -72,6 +74,10 @@ class QuizGenerator:
         """
         self.llm = VertexAI(
             ############# YOUR CODE HERE ############
+            model_name="gemini-pro",
+            temperature=0.7,
+            max_output_tokens=300,
+
         )
         
     def generate_question_with_vectorstore(self):
@@ -103,6 +109,11 @@ class QuizGenerator:
         # Initialize the LLM from the 'init_llm' method if not already initialized
         # Raise an error if the vectorstore is not initialized on the class
         ############# YOUR CODE HERE ############
+        if not self.llm:
+            self.init_llm()
+
+        if not self.vectorstore:
+            raise ValueError("No vectorstore provided!")
         
         from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
@@ -111,15 +122,19 @@ class QuizGenerator:
         # HINT: Use the vectorstore as the retriever initialized on the class
         ############# YOUR CODE HERE ############
         
+        retriver = self.vectorstore.db.as_retriever()
+
         ############# YOUR CODE HERE ############
         # Use the system template to create a PromptTemplate
         # HINT: Use the .from_template method on the PromptTemplate class and pass in the system template
         ############# YOUR CODE HERE ############
         
+        prompt = PromptTemplate.from_template(self.system_template)
+
         # RunnableParallel allows Retriever to get relevant documents
         # RunnablePassthrough allows chain.invoke to send self.topic to LLM
         setup_and_retrieval = RunnableParallel(
-            {"context": retriever, "topic": RunnablePassthrough()}
+            {"context": retriver, "topic": RunnablePassthrough()}
         )
         
         ############# YOUR CODE HERE ############
@@ -127,10 +142,20 @@ class QuizGenerator:
         # HINT: chain = RETRIEVER | PROMPT | LLM 
         ############# YOUR CODE HERE ############
 
+        chain = setup_and_retrieval | prompt | self.llm
+
         # Invoke the chain with the topic as input
         response = chain.invoke(self.topic)
         return response
-    
+    def confing():
+        credentials= service_account.Credentials.from_service_account_file('mission-quizify\quizzifykey.json')
+        embed_config = {
+            "model_name": "textembedding-gecko@003",
+            "project": "quzzifyradicalai",
+            "location": "europe-west1",
+            "credentials" : credentials
+        }
+        return embed_config
 # Test the Object
 if __name__ == "__main__":
     
@@ -138,19 +163,14 @@ if __name__ == "__main__":
     from tasks.task_4.task_4 import EmbeddingClient
     from tasks.task_5.task_5 import ChromaCollectionCreator
     
-    
-    embed_config = {
-        "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
-        "location": "us-central1"
-    }
-    
     screen = st.empty()
     with screen.container():
         st.header("Quiz Builder")
         processor = DocumentProcessor()
         processor.ingest_documents()
     
+        embed_config = EmbeddingClient.config()
+        
         embed_client = EmbeddingClient(**embed_config) # Initialize from Task 4
     
         chroma_creator = ChromaCollectionCreator(processor, embed_client)
