@@ -10,10 +10,11 @@ It has the option to generate multiple questions in the quiz based on a slider
 - Vector Store = Chromedb
 - RAG = Langchain
 
-
+##Getting Started
+To get started with Mission Quizify, please follow the installation and setup instructions below:
 ```
 # Clone the repository
-git clone https://github.com/saiteja12-g/mission-quizify.git
+git clone https://github.com/Sevixdd/mission-quizify.git
 cd mission-quizify
 
 # Install dependencies
