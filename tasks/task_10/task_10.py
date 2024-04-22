@@ -111,3 +111,6 @@ if __name__ == "__main__":
                     else:
                         st.error("Incorrect!")
                     st.write(f"Explanation: {index_question['explanation']}")
+
+
+#talk about the json line 1 char 1 0 error and  how i fixed
